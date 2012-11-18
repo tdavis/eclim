@@ -35,6 +35,8 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 
 import com.google.gson.Gson;
 
+import com.google.gson.reflect.TypeToken;
+
 /**
  * Class for handling preferences for eclim.
  *
@@ -96,6 +98,26 @@ public class Preferences
       String prefix, OptionHandler handler)
   {
     optionHandlers.put(prefix, handler);
+    return handler;
+  }
+
+  /**
+   * Adds the supplied PreferencesOptionHandler to manage eclipse preferences.
+   *
+   * Note: before calling this method, all calls to
+   * PreferencesOptionHandler.addSupportedPreferences must have already been
+   * performed. Any new qualifiers added to the handler after adding the handler
+   * here will have no affect.
+   *
+   * @param handler The PreferencesOptionHandler.
+   * @return The PreferencesOptionHandler.
+   */
+  public static PreferencesOptionHandler addOptionHandler(
+      PreferencesOptionHandler handler)
+  {
+    for (String qualifier : handler.getQualifiers()){
+      optionHandlers.put(qualifier, handler);
+    }
     return handler;
   }
 
@@ -304,6 +326,38 @@ public class Preferences
       return new Gson().fromJson(value, String[].class);
     }
     return ArrayUtils.EMPTY_STRING_ARRAY;
+  }
+
+  /**
+   * Gets the Map value of an option/preference.
+   *
+   * @param name The name of the option/preference.
+   * @return The Map value or null if not found
+   */
+  public Map<String,String> getMapValue(String name)
+    throws Exception
+  {
+    return getMapValue(null, name);
+  }
+
+  /**
+   * Gets the Map value of a project option/preference.
+   *
+   * @param project The project.
+   * @param name The name of the option/preference.
+   * @return The Map value or and empty array if not found.
+   * @throws Exception
+   */
+  @SuppressWarnings("unchecked")
+  public Map<String,String> getMapValue(IProject project, String name)
+    throws Exception
+  {
+    String value = getValues(project).get(name);
+    if (value != null && value.trim().length() != 0){
+      return (Map<String,String>)new Gson().fromJson(
+          value, new TypeToken<Map<String,String>>(){}.getType());
+    }
+    return new HashMap<String,String>();
   }
 
   /**

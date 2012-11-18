@@ -5,7 +5,7 @@
 "
 " License:
 "
-" Copyright (C) 2005 - 2011  Eric Van Dewoestine
+" Copyright (C) 2005 - 2012  Eric Van Dewoestine
 "
 " This program is free software: you can redistribute it and/or modify
 " it under the terms of the GNU General Public License as published by
@@ -22,28 +22,9 @@
 "
 " }}}
 
-" Global Variables {{{
-
-if !exists("g:EclimPythonValidate")
-  let g:EclimPythonValidate = 1
-endif
-
-" }}}
-
 " Options {{{
 
 setlocal completefunc=eclim#python#complete#CodeComplete
-
-" }}}
-
-" Autocmds {{{
-
-if g:EclimPythonValidate
-  augroup eclim_python_validate
-    autocmd! BufWritePost <buffer>
-    autocmd BufWritePost <buffer> call eclim#python#validate#Validate(1)
-  augroup END
-endif
 
 " }}}
 
@@ -63,9 +44,6 @@ if !exists(':PythonImportSort')
   command -buffer PythonImportSort :call eclim#python#import#SortImports()
 endif
 
-if !exists(":Validate")
-  command -nargs=0 -buffer Validate :call eclim#python#validate#Validate(0)
-endif
 if !exists(":PyLint")
   command -nargs=0 -buffer PyLint :call eclim#python#validate#PyLint()
 endif

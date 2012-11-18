@@ -26,6 +26,8 @@
   <classpathentry kind="src" path="org.eclim.jdt/test/junit"/>
   <classpathentry kind="src" path="org.eclim.pdt/java"/>
   <classpathentry kind="src" path="org.eclim.pdt/test/junit"/>
+  <classpathentry kind="src" path="org.eclim.pydev/java"/>
+  <classpathentry kind="src" path="org.eclim.pydev/test/junit"/>
   <classpathentry kind="src" path="org.eclim.vimplugin/java"/>
   <classpathentry kind="src" path="org.eclim.wst/java"/>
   <classpathentry kind="src" path="org.eclim.wst/test/junit"/>
