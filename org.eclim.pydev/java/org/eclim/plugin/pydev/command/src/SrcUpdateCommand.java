@@ -18,7 +18,13 @@ package org.eclim.plugin.pydev.command.src;
 
 import java.io.File;
 
+import java.lang.reflect.Field;
+
 import java.util.ArrayList;
+import java.util.Set;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclim.annotation.Command;
 
@@ -44,8 +50,15 @@ import org.python.pydev.editor.autoedit.DefaultIndentPrefs;
 
 import org.python.pydev.editor.codecompletion.revisited.modules.AbstractModule;
 import org.python.pydev.editor.codecompletion.revisited.modules.SourceModule;
+import org.python.pydev.editor.codecompletion.revisited.modules.SourceToken;
+
+import org.python.pydev.editor.codecompletion.revisited.visitors.AbstractVisitor;
 
 import org.python.pydev.parser.jython.ParseException;
+import org.python.pydev.parser.jython.SimpleNode;
+
+import org.python.pydev.parser.jython.ast.ImportFrom;
+import org.python.pydev.parser.jython.ast.NameTok;
 
 import org.python.pydev.plugin.nature.PythonNature;
 
@@ -53,6 +66,7 @@ import com.python.pydev.analysis.AnalysisPreferences;
 import com.python.pydev.analysis.IAnalysisPreferences;
 import com.python.pydev.analysis.OccurrencesAnalyzer;
 
+import com.python.pydev.analysis.messages.AbstractMessage;
 import com.python.pydev.analysis.messages.IMessage;
 
 /**
@@ -71,7 +85,7 @@ import com.python.pydev.analysis.messages.IMessage;
 public class SrcUpdateCommand
   extends AbstractCommand
 {
-  //private static final Pattern UNRESOLVED_NAME = Pattern.compile("^.*:\\s+(.*)$");
+  private static final Pattern UNRESOLVED_NAME = Pattern.compile("^.*:\\s+(.*)$");
 
   @Override
   public Object execute(CommandLine commandLine)
@@ -110,12 +124,42 @@ public class SrcUpdateCommand
 
       //Map<String,String> builtins = Preferences.getInstance()
       //  .getMapValue(project, "org.eclim.python.builtins");
+      Set<String> ignoreUnresolvedImports = getPreferences()
+        .getSetValue(project, "org.eclim.python.ignore.unresolved.imports");
 
       ArrayList<Error> errors = new ArrayList<Error>();
       for (IMessage message : messages){
         // this results in a lot of false positives for runtime added attributes
         if (message.getType() == IAnalysisPreferences.TYPE_UNDEFINED_IMPORT_VARIABLE){
           continue;
+        }
+
+        if (message.getType() == IAnalysisPreferences.TYPE_UNRESOLVED_IMPORT){
+          if (ignoreUnresolvedImports.contains("*")){
+            continue;
+          }
+
+          Matcher matcher = UNRESOLVED_NAME.matcher(message.getMessage());
+          if (matcher.find()){
+            String fqn = matcher.group(1);
+
+            if (message instanceof AbstractMessage){
+              Field generator = AbstractMessage.class.getDeclaredField("generator");
+              generator.setAccessible(true);
+              SourceToken token = (SourceToken)generator.get(message);
+              SimpleNode ast = token.getAst();
+              if (ast instanceof ImportFrom) {
+                ImportFrom imprt = (ImportFrom)ast;
+                //if it is a wild import, it starts on the module name
+                if (!AbstractVisitor.isWildImport(imprt) && imprt.module instanceof NameTok) {
+                  fqn = ((NameTok)imprt.module).id + '.' + fqn;
+                }
+              }
+            }
+            if (ignoreUnresolvedImports.contains(fqn)){
+              continue;
+            }
+          }
         }
 
         // ignore undefined variable errors for user defined globals

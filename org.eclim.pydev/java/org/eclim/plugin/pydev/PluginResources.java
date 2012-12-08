@@ -59,9 +59,10 @@ public class PluginResources
     ProjectManagement.addProjectManager(
         PythonNature.PYTHON_NATURE_ID, new PydevProjectManager());
 
-    //PreferenceFactory.addPreferences(PythonNature.PYTHON_NATURE_ID,
-    //  "PYDEV org.eclim.python.builtins {} JSON{}\n"
-    //);
+    PreferenceFactory.addPreferences(PythonNature.PYTHON_NATURE_ID,
+    //  "PYDEV org.eclim.python.builtins {} JSON{}\n" +
+      "PYDEV org.eclim.python.ignore.unresolved.imports [] JSON[]"
+    );
 
     // Note: pydev doesn't currently support project level preferences
     PreferencesOptionHandler handler = new PreferencesOptionHandler(

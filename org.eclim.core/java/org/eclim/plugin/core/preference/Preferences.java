@@ -18,7 +18,9 @@ package org.eclim.plugin.core.preference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -303,7 +305,7 @@ public class Preferences
    * Gets the array value of an option/preference.
    *
    * @param name The name of the option/preference.
-   * @return The array value or null if not found
+   * @return The possibly empty array value.
    */
   public String[] getArrayValue(String name)
     throws Exception
@@ -316,7 +318,7 @@ public class Preferences
    *
    * @param project The project.
    * @param name The name of the option/preference.
-   * @return The array value or and empty array if not found.
+   * @return The possibly empty array value.
    */
   public String[] getArrayValue(IProject project, String name)
     throws Exception
@@ -326,6 +328,37 @@ public class Preferences
       return new Gson().fromJson(value, String[].class);
     }
     return ArrayUtils.EMPTY_STRING_ARRAY;
+  }
+
+  /**
+   * Gets an array value of an option/preference as a set.
+   *
+   * @param name The name of the option/preference.
+   * @return The possibly empty set.
+   */
+  public Set<String> getSetValue(String name)
+    throws Exception
+  {
+    return getSetValue(null, name);
+  }
+
+  /**
+   * Gets an array value of a project option/preference as a set.
+   *
+   * @param project The project.
+   * @param name The name of the option/preference.
+   * @return The possibly empty set.
+   */
+  @SuppressWarnings("unchecked")
+  public Set<String> getSetValue(IProject project, String name)
+    throws Exception
+  {
+    String value = getValues(project).get(name);
+    if (value != null && value.trim().length() != 0){
+      return (Set<String>)new Gson().fromJson(
+          value, new TypeToken<Set<String>>(){}.getType());
+    }
+    return new HashSet<String>();
   }
 
   /**
