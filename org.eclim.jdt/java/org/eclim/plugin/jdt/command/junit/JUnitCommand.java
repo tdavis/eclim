@@ -88,11 +88,14 @@ import org.osgi.framework.Bundle;
     "OPTIONAL t test ARG," +
     "OPTIONAL f file ARG," +
     "OPTIONAL o offset ARG," +
-    "OPTIONAL e encoding ARG"
+    "OPTIONAL e encoding ARG," +
+    "OPTIONAL w workingdir ARG"
 )
 public class JUnitCommand
   extends AbstractCommand
 {
+  private static final String WORKINGDIR_OPTION = "w"; 
+  
   @Override
   public Object execute(CommandLine commandLine)
     throws Exception
@@ -100,6 +103,7 @@ public class JUnitCommand
     String projectName = commandLine.getValue(Options.PROJECT_OPTION);
     String testName = commandLine.getValue(Options.TEST_OPTION);
     String file = commandLine.getValue(Options.FILE_OPTION);
+    String workingDir = commandLine.getValue(WORKINGDIR_OPTION);
     int offset = getOffset(commandLine);
     boolean debug = commandLine.hasOption(Options.DEBUG_OPTION);
     boolean halt = commandLine.hasOption(Options.HALT_OPTION);
@@ -214,6 +218,10 @@ public class JUnitCommand
         junit.addTest(test);
       }
     }
+    
+    if (workingDir != null){
+      junit.setDir(new File(workingDir));
+    } 
 
     try{
       junit.init();
